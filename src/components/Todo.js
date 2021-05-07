@@ -1,11 +1,17 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+
+import { usePrevious } from '../utils/Commons'
 
 export default function Todo(props) {
 
-    const [isEdtiting, setEditing] = useState(false);
-
+    //Hooks
+    const [isEditing, setEditing] = useState(false);
     const [newName, setNewName] = useState('');
+    const editFieldRef = useRef(null);
+    const editButtonRef = useRef(null);
+    const wasEditing = usePrevious(isEditing);
 
+    //Functions
     function handleChange(e) {
         setNewName(e.target.value);
     }
@@ -27,7 +33,8 @@ export default function Todo(props) {
                 id={props.id} 
                 className="todo-text" 
                 type="text"
-                onChange={handleChange} />
+                onChange={handleChange} 
+                ref={editFieldRef}/>
           </div>
           <div className="btn-group">
             <button 
@@ -64,7 +71,9 @@ export default function Todo(props) {
               <button 
                 type="button" 
                 className="btn"
-                onClick={() => setEditing(true)}>
+                onClick={() => setEditing(true)}
+                ref={editButtonRef}
+              >
                 Edit <span className="visually-hidden">{props.name}</span>
               </button>
               <button
@@ -78,7 +87,14 @@ export default function Todo(props) {
         </div>
     );
 
+    useEffect(() => {
+      if (!wasEditing && isEditing) {
+        editFieldRef.current.focus();
+      } else if(wasEditing && !isEditing){
+        editButtonRef.current.focus();
+      }
+    }, [wasEditing, isEditing]);
     return (
-        <li className="todo">{isEdtiting ? editingTemplate : viewTemplate}</li>
+        <li className="todo">{isEditing ? editingTemplate : viewTemplate}</li>
     );
 }
